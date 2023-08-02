@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const routes = require('./routes/users');
+const routesCard = require('./routes/cards');
 
 const app = express();
 
@@ -14,7 +15,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 app.use(bodyParser.json());
-app.use('/users', routes);
 
 app.use((req, res, next) => {
   req.user = {
@@ -23,6 +23,9 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.use('/users', routes);
+app.use('/card', routesCard);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
