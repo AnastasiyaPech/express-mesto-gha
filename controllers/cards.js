@@ -17,7 +17,8 @@ const createCard = (req, res) => {
 };
 
 const findCard = (req, res) => {
-  Card.find()
+  Card.find({})
+    .populate(['owner', 'likes'])
     .then((cards) => res.send(cards))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -63,6 +64,7 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
         res.status(404).send({ message: 'Card not found' });
