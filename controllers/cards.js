@@ -7,13 +7,25 @@ const createCard = (req, res) => {
     .then((card) => {
       res.send(card);
     })
-    .catch(() => res.status(500).send('Server error'));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Bad request' });
+        return;
+      }
+      res.status(500).send({ message: 'Server error' });
+    });
 };
 
 const findCard = (req, res) => {
   Card.find()
     .then((cards) => res.send(cards))
-    .catch(() => res.status(500).send({ message: 'Server error' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Bad request' });
+        return;
+      }
+      res.status(500).send({ message: 'Server error' });
+    });
 };
 
 const deleteCardId = (req, res) => {
@@ -22,6 +34,7 @@ const deleteCardId = (req, res) => {
     .then((card) => {
       if (!card) {
         res.status(404).send({ message: 'Card not found' });
+        return;
       }
       res.send(card);
     })
@@ -37,6 +50,7 @@ const likeCard = (req, res) => {
     .then((card) => {
       if (!card) {
         res.status(404).send({ message: 'Card not found' });
+        return;
       }
       res.send(card);
     })
@@ -52,6 +66,7 @@ const dislikeCard = (req, res) => {
     .then((card) => {
       if (!card) {
         res.status(404).send({ message: 'Card not found' });
+        return;
       }
       res.send(card);
     })
