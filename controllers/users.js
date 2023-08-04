@@ -43,7 +43,10 @@ const getUserId = (req, res) => {
       res.send(user);
     })
     .catch((err) => {
+      console.log(err);
       if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Bad request' });
+      } else if (err.name === 'CastError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }

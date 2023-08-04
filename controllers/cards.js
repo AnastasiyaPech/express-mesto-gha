@@ -10,6 +10,8 @@ const createCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Bad request' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Bad request' });
         return;
       }
       res.status(500).send({ message: 'Server error' });
@@ -22,6 +24,8 @@ const findCard = (req, res) => {
     .then((cards) => res.send(cards))
     .catch((err) => {
       if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Bad request' });
+      } else if (err.name === 'CastError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
