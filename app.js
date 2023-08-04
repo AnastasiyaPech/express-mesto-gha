@@ -26,5 +26,8 @@ app.use((req, res, next) => {
 
 app.use('/users', routes);
 app.use('/cards', routesCard);
+app.use('*', (req, res) => {
+  res.status(404).send({ message: 'Not found' });
+});
 
 app.listen(PORT);

@@ -43,7 +43,15 @@ const deleteCardId = (req, res) => {
       }
       res.send(card);
     })
-    .catch(() => res.status(500).send({ message: 'Server error' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Bad request' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Bad request' });
+        return;
+      }
+      res.status(500).send({ message: 'Server error' });
+    });
 };
 
 const likeCard = (req, res) => {
@@ -59,7 +67,15 @@ const likeCard = (req, res) => {
       }
       res.send(card);
     })
-    .catch(() => res.status(500).send({ message: 'Server error' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Bad request' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Bad request' });
+        return;
+      }
+      res.status(500).send({ message: 'Server error' });
+    });
 };
 
 const dislikeCard = (req, res) => {
@@ -76,7 +92,15 @@ const dislikeCard = (req, res) => {
       }
       res.send(card);
     })
-    .catch(() => res.status(500).send({ message: 'Server error' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Bad request' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Bad request' });
+        return;
+      }
+      res.status(500).send({ message: 'Server error' });
+    });
 };
 
 module.exports = {
