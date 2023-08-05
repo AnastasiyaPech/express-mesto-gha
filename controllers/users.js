@@ -41,7 +41,7 @@ const getUserId = (req, res) => {
     .catch((err) => {
       if (err.message === 'NoValidId') {
         res.status(404).send({ message: 'User not found' });
-      } else if (err.name === 'ValidationError') {
+      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
