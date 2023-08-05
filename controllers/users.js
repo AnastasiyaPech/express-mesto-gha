@@ -4,7 +4,7 @@ const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.send(user))
+    .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Bad request' });
@@ -16,15 +16,14 @@ const createUser = (req, res) => {
 
 const findUsers = (req, res) => {
   User.find({})
+    .orFail(new Error('NoValidId'))
     .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'User not found' });
-        return;
-      }
-      res.send(user);
+      res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.message === 'NoValidId') {
+        res.status(404).send({ message: 'User not found' });
+      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
@@ -35,18 +34,14 @@ const findUsers = (req, res) => {
 const getUserId = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
+    .orFail(new Error('NoValidId'))
     .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'User not found' });
-        return;
-      }
-      res.send(user);
+      res.status(200).send(user);
     })
     .catch((err) => {
-      console.log(err);
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
-      } else if (err.name === 'CastError') {
+      if (err.message === 'NoValidId') {
+        res.status(404).send({ message: 'User not found' });
+      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
@@ -57,15 +52,14 @@ const getUserId = (req, res) => {
 const updateUser = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: 'true', runValidators: true })
+    .orFail(new Error('NoValidId'))
     .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'User not found' });
-        return;
-      }
-      res.send(user);
+      res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.message === 'NoValidId') {
+        res.status(404).send({ message: 'User not found' });
+      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
@@ -76,14 +70,19 @@ const updateUser = (req, res) => {
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: 'true', runValidators: true })
+    .orFail(new Error('NoValidId'))
     .then((user) => {
-      if (!user) {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.message === 'NoValidId') {
         res.status(404).send({ message: 'User not found' });
+      } else if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Bad request' });
         return;
       }
-      res.send(user);
-    })
-    .catch(() => res.status(500).send({ message: 'Server error' }));
+      res.status(500).send({ message: 'Server error' });
+    });
 };
 
 module.exports = {

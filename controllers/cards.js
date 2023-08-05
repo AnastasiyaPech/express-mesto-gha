@@ -5,12 +5,10 @@ const createCard = (req, res) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => {
-      res.send(card);
+      res.status(201).send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
-      } else if (err.name === 'CastError') {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
@@ -21,11 +19,9 @@ const createCard = (req, res) => {
 const findCard = (req, res) => {
   Card.find({})
     .populate(['owner', 'likes'])
-    .then((cards) => res.send(cards))
+    .then((cards) => res.status(200).send(cards))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
-      } else if (err.name === 'CastError') {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
@@ -36,17 +32,14 @@ const findCard = (req, res) => {
 const deleteCardId = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove(cardId)
+    .orFail(new Error('NoValidId'))
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Card not found' });
-        return;
-      }
-      res.send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
-      } else if (err.name === 'CastError') {
+      if (err.message === 'NoValidId') {
+        res.status(404).send({ message: 'Card not found' });
+      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
@@ -60,17 +53,14 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(new Error('NoValidId'))
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Card not found' });
-        return;
-      }
-      res.send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
-      } else if (err.name === 'CastError') {
+      if (err.message === 'NoValidId') {
+        res.status(404).send({ message: 'Card not found' });
+      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
@@ -85,17 +75,14 @@ const dislikeCard = (req, res) => {
     { new: true },
   )
     .populate(['owner', 'likes'])
+    .orFail(new Error('NoValidId'))
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Card not found' });
-        return;
-      }
-      res.send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
-      } else if (err.name === 'CastError') {
+      if (err.message === 'NoValidId') {
+        res.status(404).send({ message: 'Card not found' });
+      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Bad request' });
         return;
       }
