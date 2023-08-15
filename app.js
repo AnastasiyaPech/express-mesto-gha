@@ -5,6 +5,7 @@ const routes = require('./routes/users');
 const routesCard = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
+const { errorHandler } = require('./middlewares/error-handler');
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.use('/cards', routesCard);
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Not found' });
 });
+app.use(errorHandler);
 
 app.listen(PORT);

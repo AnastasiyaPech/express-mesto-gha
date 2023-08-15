@@ -4,9 +4,13 @@ const User = require('../models/user');
 
 const SALT_ROUNDS = 10;
 const { JWT_SECRET = 'some-secret-key' } = process.env;
+const { ConflictnameError } = require('../errors/conflictname-error');
+const { ValidationError } = require('../errors/validation-error');
+const { UnauthorizedError } = require('../errors/unauthorized-error');
+const { NotFoundError } = require('../errors/notfound-error');
 
 // /signup
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name,
     about,
@@ -27,40 +31,41 @@ const createUser = (req, res) => {
         .then((user) => res.status(201).send(user))
         .catch((err) => {
           if (err.code === 11000) {
-            res.status(409).send({ message: 'Conflict' });
+            next(new ConflictnameError('Conflict'));
           } else if (err.name === 'ValidationError') {
-            res.status(400).send({ message: 'Bad request' });
+            next(new ValidationError('Bad request'));
             return;
           }
-          res.status(500).send({ message: 'Server error' });
+          next(err);
         });
     });
 };
 
 // /signin
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email } = req.body;
-  User.findOne({ email })
+  User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        res.status(401).send({ message: 'Unauthorized' });
+        next(new UnauthorizedError('Unauthorized'));
       }
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       res.status(200).send({ token });
     })
     .catch((err) => {
       if (err.message === 'NoValidId') {
-        res.status(404).send({ message: 'User not found' });
+        next(new NotFoundError('User not found'));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
+        next(new ValidationError('Bad request'));
         return;
       }
-      res.status(500).send({ message: 'Server error' });
+      next(err);
+      // res.status(500).send({ message: 'Server error' });
     });
 };
 
 // /me
-const currentUser = (req, res) => {
+const currentUser = (req, res, next) => {
   const userId = req.user._id;
   User.findById(userId)
     .orFail(new Error('NoValidId'))
@@ -69,17 +74,17 @@ const currentUser = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NoValidId') {
-        res.status(404).send({ message: 'User not found' });
+        next(new NotFoundError('User not found'));
       } else if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(400).send({ message: 'Bad request' });
+        next(new ValidationError('Bad request'));
         return;
       }
-      res.status(500).send({ message: 'Server error' });
+      next(err);
     });
 };
 
 // /
-const findUsers = (req, res) => {
+const findUsers = (req, res, next) => {
   User.find({})
     .orFail(new Error('NoValidId'))
     .then((user) => {
@@ -87,17 +92,17 @@ const findUsers = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NoValidId') {
-        res.status(404).send({ message: 'User not found' });
+        next(new NotFoundError('User not found'));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
+        next(new ValidationError('Bad request'));
         return;
       }
-      res.status(500).send({ message: 'Server error' });
+      next(err);
     });
 };
 
 // /:userId
-const getUserId = (req, res) => {
+const getUserId = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
     .orFail(new Error('NoValidId'))
@@ -106,17 +111,17 @@ const getUserId = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NoValidId') {
-        res.status(404).send({ message: 'User not found' });
+        next(new NotFoundError('User not found'));
       } else if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(400).send({ message: 'Bad request' });
+        next(new ValidationError('Bad request'));
         return;
       }
-      res.status(500).send({ message: 'Server error' });
+      next(err);
     });
 };
 
 // /me
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: 'true', runValidators: true })
     .orFail(new Error('NoValidId'))
@@ -125,17 +130,17 @@ const updateUser = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NoValidId') {
-        res.status(404).send({ message: 'User not found' });
+        next(new NotFoundError('User not found'));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
+        next(new ValidationError('Bad request'));
         return;
       }
-      res.status(500).send({ message: 'Server error' });
+      next(err);
     });
 };
 
 // /me/avatar
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: 'true', runValidators: true })
     .orFail(new Error('NoValidId'))
@@ -144,12 +149,12 @@ const updateAvatar = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NoValidId') {
-        res.status(404).send({ message: 'User not found' });
+        next(new NotFoundError('User not found'));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Bad request' });
+        next(new ValidationError('Bad request'));
         return;
       }
-      res.status(500).send({ message: 'Server error' });
+      next(err);
     });
 };
 
