@@ -28,7 +28,11 @@ const createUser = (req, res, next) => {
         email,
         password: hash,
       })
-        .then((user) => res.status(201).send(user))
+        .then((data) => {
+          const userResponse = data.toObject();
+          delete userResponse.password;
+          res.status(201).send(userResponse);
+        })
         .catch((err) => {
           if (err.code === 11000) {
             next(new ConflictnameError('Conflict'));

@@ -7,7 +7,9 @@ const {
   dislikeCard,
 } = require('../controllers/cards');
 
-router.post('/', createCard);
+const { validationCreateCard } = require('../utils/celebrate');
+
+router.post('/', validationCreateCard, createCard);
 router.get('/', findCard);
 router.delete('/:cardId', deleteCardId);
 router.put('/:cardId/likes', likeCard);
