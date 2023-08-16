@@ -7,11 +7,11 @@ const {
   currentUser,
 } = require('../controllers/users');
 
-const { validationUpdateUser, validationUpdateAvatar } = require('../utils/celebrate');
+const { validationGetUserId, validationUpdateUser, validationUpdateAvatar } = require('../utils/celebrate');
 
 router.get('/me', currentUser);
 router.get('/', findUsers);
-router.get('/:userId', getUserId);
+router.get('/:userId', validationGetUserId, getUserId);
 router.patch('/me', validationUpdateUser, updateUser);
 router.patch('/me/avatar', validationUpdateAvatar, updateAvatar);
 
