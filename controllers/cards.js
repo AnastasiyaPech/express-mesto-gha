@@ -38,13 +38,17 @@ const findCard = (req, res, next) => {
 // /:cardId
 const deleteCardId = (req, res, next) => {
   const { cardId } = req.params;
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
     .orFail(new Error('NoValidId'))
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
         next(new ForbiddenError('Bad request'));
+        return;
       }
-      res.status(200).send(card);
+      Card.findByIdAndRemove(cardId)
+        .then(() => {
+          res.status(200).send({ message: 'Card removed' });
+        });
     })
     .catch((err) => {
       if (err.message === 'NoValidId') {

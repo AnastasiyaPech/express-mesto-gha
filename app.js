@@ -8,6 +8,7 @@ const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/error-handler');
 const { validationCreateUser, validationLogin } = require('./utils/celebrate');
+const { NotFoundError } = require('./errors/notfound-error');
 
 const app = express();
 
@@ -26,8 +27,8 @@ app.post('/signin', validationLogin, login);
 app.use(auth);
 app.use('/users', routes);
 app.use('/cards', routesCard);
-app.use('*', (req, res) => {
-  res.status(404).send({ message: 'Not found' });
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Not found'));
 });
 app.use(errors());
 app.use(errorHandler);

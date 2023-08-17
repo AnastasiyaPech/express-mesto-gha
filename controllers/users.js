@@ -47,14 +47,20 @@ const createUser = (req, res, next) => {
 
 // /signin
 const login = (req, res, next) => {
-  const { email } = req.body;
-  User.findOne({ email }).select('+password')
+  const { email, password } = req.body;
+  return User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        next(new UnauthorizedError('Unauthorized'));
+        return next(new UnauthorizedError('Unauthorized'));
       }
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-      res.status(200).send({ token });
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            return next(new UnauthorizedError('Unauthorized'));
+          }
+          const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+          return res.status(200).send({ token });
+        });
     })
     .catch((err) => {
       if (err.message === 'NoValidId') {
