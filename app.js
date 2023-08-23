@@ -9,6 +9,7 @@ const { auth } = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/error-handler');
 const { validationCreateUser, validationLogin } = require('./utils/celebrate');
 const { NotFoundError } = require('./errors/notfound-error');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
 
@@ -22,6 +23,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(bodyParser.json());
 
+app.use(requestLogger);
+
 app.post('/signup', validationCreateUser, createUser);
 app.post('/signin', validationLogin, login);
 app.use(auth);
@@ -30,6 +33,8 @@ app.use('/cards', routesCard);
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Not found'));
 });
+
+app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 
